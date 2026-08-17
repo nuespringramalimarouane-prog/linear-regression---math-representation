@@ -1,17 +1,10 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from gradient_descent import gradient_descent
 
 def generate_london_prices(n=100, seed=None):
     """
     Generate simplified house size and price data for London.
-
-    Args:
-        n: number of samples
-        seed: optional RNG seed
-
-    Returns:
-        x (ndarray (n,)): house sizes in 1000 sqft
-        y (ndarray (n,)): house prices in GBP
     """
     rng = np.random.default_rng(seed)
 
@@ -39,22 +32,35 @@ def compute_real_estate_prices(x, w, b):
     return w * x + b
 
 
+def compute_cost(y_true, y_pred):
+    """
+    Compute Mean Squared Error (MSE) cost function
+    """
+    m = len(y_true)
+    return np.sum((y_pred - y_true)**2) / (2 * m)
+
+
 def main():
     # Generate training data
     x_train, y_train = generate_london_prices(n=50, seed=0)
 
     # Fit linear regression (find w and b)
-    w, b = np.polyfit(x_train, y_train, 1)
+    w, b = gradient_descent(x_train,y_train,alpha=0.05,num_iters=2000)
     print(f"Fitted parameters: w = {w:.2f}, b = {b:.2f}")
 
     # Predictions on training data
     f_wb = compute_model_output(x_train, w, b)
 
-    
     # Test with new house sizes
     x_test = np.array([1.2, 2.4, 3.5])  # in 1000 sqft
     real_estimate = compute_real_estate_prices(x_test, w, b)
     print(f"Real estate price estimates for {x_test}: {real_estimate}")
+
+    # For demonstration, let's assume some "true" prices for test values
+    # (in practice you'd have actual test labels)
+    y_test_true = np.array([750000, 900000, 1050000])  
+    test_cost = compute_cost(y_test_true, real_estimate)
+    print(f"Cost function (MSE) on test values: {test_cost:.2f}")
 
     # Plot training data and fitted line
     plt.scatter(x_train, y_train, marker='x', c='r', label='Actual Values')
@@ -65,7 +71,6 @@ def main():
     plt.ylabel("Price (GBP)")
     plt.legend()
     plt.show()
-
 
 
 if __name__ == '__main__':
