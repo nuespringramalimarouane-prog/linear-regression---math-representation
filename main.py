@@ -1,77 +1,62 @@
+import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-from gradient_descent import gradient_descent
 
-def generate_london_prices(n=100, seed=None):
-    """
-    Generate simplified house size and price data for London.
-    """
-    rng = np.random.default_rng(seed)
+"""
 
-    # House sizes between 0.5k and 5k sqft
-    x = rng.uniform(0.5, 5.0, size=n)
+This code implements a simple linear regression model using gradient descent to predict house prices based on square footage (sqft_living).
 
-    # Approximate average London house price (2026 estimate)
-    base_price = 600_000  
+"""
 
-    # Assume price grows with size (linear trend)
-    price_per_sqft = 120_000  # GBP per 1000 sqft
+# Load dataset
+df = pd.read_csv("dataset.csv")
 
-    # Add variation to simulate different properties
-    noise = rng.normal(0, 100_000, size=n)  # ±100k variation
-    y = base_price + price_per_sqft * x + noise
+# Normalize only the feature (sqft_living)
+x_mean, x_std = df["sqft_living"].mean(), df["sqft_living"].std()
+x_train = (df["sqft_living"] - x_mean) / x_std
+y_train = df["price"]
 
-    return x, y
+# compute gradients of the cost function with respect to weights and bias
+def dj_d_wb(x, y, w, b):
+    m = len(x)
+    f_wb = w * x + b
+    dj_dw = np.sum((f_wb - y) * x) / m
+    dj_db = np.sum(f_wb - y) / m
+    return dj_dw, dj_db
+# compute cost function
+def compute_cost(x, y, w, b):
+    m = len(x)
+    f_wb = w * x + b
+    return np.sum((f_wb - y)**2) / (2*m)
+# gradient descent function
+def gradient_descent(x, y, w=0, b=0, alpha=0.03, num_iters=5000):
+    for i in range(num_iters):
+        dj_dw, dj_db = dj_d_wb(x, y, w, b)
+        w -= alpha * dj_dw
+        b -= alpha * dj_db
+        if i % 500 == 0:
+            print(f"Iteration {i}: Cost {compute_cost(x,y,w,b)}, w={w}, b={b}")
+    return w, b
 
+# Train model
+w, b = gradient_descent(x_train.values, y_train.values, alpha=0.001, num_iters=10000)
+print(f"Final parameters: w={w}, b={b}")
 
-def compute_model_output(x, w, b):
-    return w * x + b
+# Test data (normalize x only)
+data_test = df["sqft_living"][1010:1020]
+data_test_y = df["price"][1010:1020]
+x_test = (data_test - x_mean) / x_std
 
+# Predictions
+for i in range(len(x_test)):
+    prediction = w * x_test.iloc[i] + b
+    print(f"Prediction for sqft_living {data_test.iloc[i]}: {prediction:.2f} Actual price: {data_test_y.iloc[i]}")
 
-def compute_real_estate_prices(x, w, b):
-    return w * x + b
-
-
-def compute_cost(y_true, y_pred):
-    """
-    Compute Mean Squared Error (MSE) cost function
-    """
-    m = len(y_true)
-    return np.sum((y_pred - y_true)**2) / (2 * m)
-
-
-def main():
-    # Generate training data
-    x_train, y_train = generate_london_prices(n=50, seed=0)
-
-    # Fit linear regression (find w and b)
-    w, b = gradient_descent(x_train,y_train,alpha=0.05,num_iters=2000)
-    print(f"Fitted parameters: w = {w:.2f}, b = {b:.2f}")
-
-    # Predictions on training data
-    f_wb = compute_model_output(x_train, w, b)
-
-    # Test with new house sizes
-    x_test = np.array([1.2, 2.4, 3.5])  # in 1000 sqft
-    real_estimate = compute_real_estate_prices(x_test, w, b)
-    print(f"Real estate price estimates for {x_test}: {real_estimate}")
-
-    # For demonstration, let's assume some "true" prices for test values
-    # (in practice you'd have actual test labels)
-    y_test_true = np.array([750000, 900000, 1050000])  
-    test_cost = compute_cost(y_test_true, real_estimate)
-    print(f"Cost function (MSE) on test values: {test_cost:.2f}")
-
-    # Plot training data and fitted line
-    plt.scatter(x_train, y_train, marker='x', c='r', label='Actual Values')
-    plt.plot(x_train, f_wb, c='b', label='Fitted Model')
-    plt.plot(x_test, real_estimate, marker='o', c='g', label='Test Predictions')
-    plt.title("London Housing Prices")
-    plt.xlabel("Size (1000 sqft)")
-    plt.ylabel("Price (GBP)")
-    plt.legend()
-    plt.show()
-
-
-if __name__ == '__main__':
-    main()
+# Plot regression line in original scale
+plt.scatter(df["sqft_living"], df["price"], color='blue', label='Training Data')
+plt.plot(df["sqft_living"], w * ((df["sqft_living"] - x_mean)/x_std) + b, color='red', label='Regression Line')
+plt.xlabel('Square Footage')
+plt.ylabel('Price')
+plt.title('Linear Regression: Price vs Square Footage')
+plt.legend()
+plt.show()
