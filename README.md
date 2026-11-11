@@ -1,227 +1,115 @@
-# Machine Learning: Linear Regression with Gradient Descent
+# Linear Regression with Gradient Descent
 
-## Project Overview
+A small educational project that implements linear regression with NumPy and compares two approaches to gradient descent:
 
-This project implements a **linear regression model** to predict house prices based on square footage (sqft_living) using the **gradient descent optimization algorithm**. The project demonstrates both vectorized and non-vectorized implementations to help understand how gradient descent works mathematically.
+- **Vectorized implementation** in `main.py`.
+- **Loop-based implementation** in `gradient_descent.py`.
 
----
+The project focuses on the prediction function, mean-squared-error cost, gradient calculation, parameter updates, and training-cost visualization.
 
-## File Structure
+## Concepts covered
 
-```
-├── main.py                 # Vectorized implementation (optimized)
-├── gradient_descent.py     # Non-vectorized implementation (educational)
-├── README.md              # Project documentation
+- Linear regression: \(f_{w,b}(x) = wx + b\)
+- Mean-squared-error cost
+- Partial derivatives with respect to the weight and bias
+- Batch gradient descent
+- Feature normalization
+- Vectorized NumPy operations versus explicit Python loops
+
+## Repository structure
+
+```text
+.
+├── main.py                 # Vectorized implementation and visualization
+├── gradient_descent.py     # Loop-based educational implementation
+├── README.md
 └── docs/
-    ├── API.md             # API reference
-    └── USAGE.md           # Usage guide
+    ├── API.md
+    └── USAGE.md
 ```
 
----
+The program also expects the dataset CSV used by the implementation. Keep the dataset in the location configured by the data-loading code, or update that path for your environment.
 
-## main.py - Optimized Linear Regression
+## Requirements
 
-### Purpose
-Implements a complete linear regression model with **vectorized NumPy operations** for efficiency. This is the production-ready version.
+- Python 3
+- NumPy
+- pandas
+- Matplotlib
 
-### Key Components
+Install the dependencies:
 
-**1. Data Loading & Normalization**
-- Loads house price dataset from CSV
-- Normalizes the feature (sqft_living) using z-score normalization:
-  - Formula: `x_normalized = (x - mean) / std_dev`
-  - Improves gradient descent convergence
-
-**2. Cost Function**
-```python
-compute_cost(x, y, w, b)
-```
-- Calculates Mean Squared Error (MSE): `J(w,b) = (1/2m) * Σ(f_wb - y)²`
-- Measures how well the model fits the training data
-- Used to track training progress
-
-**3. Gradient Calculation**
-```python
-dj_d_wb(x, y, w, b)
-```
-- Computes partial derivatives of the cost function:
-  - `dj_dw = (1/m) * Σ((f_wb - y) * x)` → gradient w.r.t. weight
-  - `dj_db = (1/m) * Σ(f_wb - y)` → gradient w.r.t. bias
-- Uses **vectorized NumPy operations** for speed
-
-**4. Gradient Descent Algorithm**
-```python
-gradient_descent(x, y, w=0, b=0, alpha=0.03, num_iters=5000)
-```
-- Iteratively updates weights and bias:
-  - `w = w - alpha * dj_dw`
-  - `b = b - alpha * dj_db`
-- **Parameters**:
-  - `alpha` = learning rate (controls step size)
-  - `num_iters` = number of iterations
-- Prints cost every 500 iterations to monitor convergence
-
-**5. Model Training & Evaluation**
-- Trains on the entire dataset with 10,000 iterations
-- Makes predictions on test data (rows 1010-1020)
-- Compares predictions vs. actual prices
-
-**6. Visualization**
-- Plots training data (blue scatter points)
-- Overlays the fitted regression line (red line)
-- Shows relationship between square footage and price
-
-### Why Use This Version?
-✅ **Fast** - Vectorized operations are ~100x faster than loops  
-✅ **Scalable** - Works efficiently with large datasets  
-✅ **Production-ready** - Optimal for real-world applications
-
----
-
-## gradient_descent.py - Educational Implementation
-
-### Purpose
-Implements gradient descent using **explicit loops** (non-vectorized). This version prioritizes **clarity and understanding** over performance.
-
-### Key Functions
-
-**1. Gradient Calculation (Non-Vectorized)**
-```python
-dj_wb_cal(x, y, w, b)
-```
-- Loops through each data point individually
-- Calculates partial derivatives step-by-step:
-  ```python
-  for i in range(m):
-      fx_wb_i = w * x[i] + b                    # prediction
-      dj_dw_i = (fx_wb_i - y[i]) * x[i]        # gradient contribution
-      dj_db_i = (fx_wb_i - y[i])               # gradient contribution
-      dj_dw += dj_dw_i
-      dj_db += dj_db_i
-  ```
-- Easier to follow the mathematical logic
-
-**2. Gradient Descent Algorithm**
-```python
-gradient_descent(x, y, w_init=0, b_init=0, alpha=0.01, num_iters=1000)
-```
-- Same optimization logic as main.py but implemented with loops
-- Updates parameters iteratively
-- Prints progress every 100 iterations
-
-### Why Use This Version?
-📚 **Educational** - Shows math behind gradient descent clearly  
-🔍 **Debugging** - Easy to trace and understand each step  
-💡 **Learning** - Perfect for understanding how algorithms work
-
-### Why NOT in Production?
-❌ **Slow** - Loops are ~100x slower than vectorized operations  
-❌ **Not scalable** - Inefficient for large datasets
-
----
-
-## How Gradient Descent Works
-
-### Concept
-Gradient descent is an optimization algorithm that finds the best weights (w) and bias (b) by:
-1. Starting with random initial values
-2. Computing gradients (direction of steepest descent)
-3. Taking small steps in the opposite direction of the gradient
-4. Repeating until convergence
-
-### The Learning Rate (alpha)
-- **Too small** (e.g., 0.001): Slow convergence, more iterations needed
-- **Too large** (e.g., 0.1): May overshoot, diverge, or oscillate
-- **Optimal** (e.g., 0.03): Fast, stable convergence
-
-### Math Formula
-```
-w = w - alpha * (dJ/dw)
-b = b - alpha * (dJ/db)
+```bash
+python -m pip install numpy pandas matplotlib
 ```
 
----
+## Run
 
-## Model Equation
+From the repository directory, run:
 
-The linear regression model is:
-```
-f(x) = w * x + b
-```
-
-Where:
-- **w** = weight (slope of the line)
-- **b** = bias (y-intercept)
-- **x** = normalized square footage
-- **f(x)** = predicted house price
-
----
-
-## Usage
-
-### Requirements
-```
-pandas
-numpy
-matplotlib
-```
-
-### Running the Main Model
 ```bash
 python main.py
 ```
 
-### Expected Output
-- Prints cost, w, and b every 500 iterations
-- Shows predictions for test data
-- Displays scatter plot with regression line
+The script trains the vectorized model, reports training progress and predictions, and displays a plot of the data and fitted regression line. The exact output depends on the dataset and the parameters configured in the source code.
 
----
+## How the implementation works
 
-## Dataset
-- Located at: `C:/Users/nuesp/Desktop/PYTHON/linear_regression_one_feature/dataset.csv`
-- Contains: square footage (sqft_living) and house prices
-- Features: 1 (sqft_living)
-- Format: CSV
+### Prediction
 
----
+For one feature, the model predicts:
 
-## Key Concepts
+\[
+f_{w,b}(x) = wx + b
+\]
 
-| Concept | Definition |
-|---------|-----------|
-| **Gradient Descent** | Optimization algorithm to minimize cost function |
-| **Cost Function** | MSE measures prediction error |
-| **Normalization** | Scaling features to improve convergence |
-| **Learning Rate** | Step size for parameter updates |
-| **Vectorization** | Using NumPy arrays instead of loops for speed |
-| **Convergence** | Point where algorithm stops improving |
+where \(w\) is the weight, \(b\) is the bias, and \(x\) is the normalized input feature.
 
----
+### Cost function
 
-## Comparison: main.py vs gradient_descent.py
+The implementation uses the half mean-squared-error cost:
 
-| Aspect | main.py | gradient_descent.py |
-|--------|---------|-------------------|
-| Implementation | Vectorized (NumPy) | Non-vectorized (Loops) |
-| Speed | Fast (~100x) | Slow |
-| Readability | Concise | Explicit |
-| Use Case | Production | Learning |
-| Scalability | Excellent | Poor |
+\[
+J(w,b) = \frac{1}{2m}\sum_{i=1}^{m}(f_{w,b}(x^{(i)})-y^{(i)})^2
+\]
 
----
+The cost measures the average squared difference between predictions and actual values. The factor of \(1/2\) simplifies the gradient expressions.
 
-## Future Improvements
-- [ ] Add multiple features (multivariate regression)
-- [ ] Implement regularization (L1/L2)
-- [ ] Add cross-validation
-- [ ] Use scikit-learn for comparison
-- [ ] Add error metrics (MAE, RMSE, R²)
+### Gradient descent
 
----
+At each iteration, the algorithm computes the gradients and updates the parameters in the opposite direction:
 
-## Author
-Machine Learning Learning Project
+\[
+w := w - \alpha\frac{\partial J}{\partial w},
+\qquad
+b := b - \alpha\frac{\partial J}{\partial b}
+\]
 
-## License
-Open source
+The learning rate \(\alpha\) controls the size of each update. The implementation records or prints cost values to help inspect convergence.
+
+## Implementation comparison
+
+| Aspect | `main.py` | `gradient_descent.py` |
+|---|---|---|
+| Approach | Vectorized NumPy operations | Explicit Python loops |
+| Main goal | Demonstrate array-based computation | Make each calculation step visible |
+| Readability | More concise | More step-by-step |
+| Learning value | Efficient numerical implementation | Easier to trace individual updates |
+
+The vectorized implementation is intended to reduce Python-level looping; actual performance depends on the dataset size and execution environment.
+
+## Current limitations
+
+- The training and evaluation configuration is defined in the source code rather than exposed as command-line options.
+- The evaluation slice is small, so its metrics should not be treated as a reliable estimate of generalization.
+- The dataset path must be configured for the local environment.
+- The implementation is educational and is not presented as a production forecasting system.
+
+## Possible next improvements
+
+- Use a reproducible train/validation/test split.
+- Evaluate on a larger held-out test set.
+- Report MAE, RMSE, and \(R^2\).
+- Add tests for prediction, cost, gradient, and parameter updates.
+- Handle missing values and constant features explicitly.
+- Add a `requirements.txt` file and a configurable dataset path.
